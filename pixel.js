@@ -1,5 +1,4 @@
 (function () {
-  // Проверяем наличие куки
   function getCookie(name) {
     const matches = document.cookie.match(
       new RegExp(
@@ -9,9 +8,7 @@
     return matches ? decodeURIComponent(matches[1]) : undefined;
   }
 
-  // Устанавливаем куки
   function setCookie(name, value, options = {}) {
-    console.log(name, value, options);
     options = {
       path: "/",
       ...options,
@@ -36,9 +33,38 @@
     document.cookie = updatedCookie;
   }
 
-  // Проверяем и устанавливаем куки, если их нет
   if (getCookie("visited")) {
     return;
   }
   setCookie("visited", "true", { expires: 365 });
+
+  // Сбор данных
+  const data = {
+    url: window.location.href,
+    visiting_site: document.referrer,
+    ip_user: "",
+    time_stamp: new Date().toISOString(),
+    scroll_percentage: 0,
+    history_click: "",
+    user_agent: navigator.userAgent,
+  };
+
+  console.log(data);
+
+  // Отправка данных на сервер
+  fetch("http://site-visit-data//collect.php", {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json;charset=utf-8",
+    },
+    body: JSON.stringify(data),
+  })
+    .then(response => response.json())
+    .then(data => {
+      console.log("Success:", data);
+    })
+    .catch(error => {
+      console.error("Error:", error);
+    });
 })();
