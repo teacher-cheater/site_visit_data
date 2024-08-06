@@ -1,6 +1,11 @@
 <?php
 header('Content-Type: application/json');
 
+// Разрешение CORS
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
+
 // Получаем данные из POST-запроса
 $raw_data = file_get_contents('php://input');
 $data = json_decode($raw_data, true);
@@ -15,6 +20,27 @@ if (!$data) {
     exit();
 }
 
+// Функция получения IP-адреса пользователя
+function getIp()
+{
+    $keys = [
+        'HTTP_CLIENT_IP',
+        'HTTP_X_FORWARDED_FOR',
+        'REMOTE_ADDR'
+    ];
+    foreach ($keys as $key) {
+        if (!empty($_SERVER[$key])) {
+            $ip = trim(end(explode(',', $_SERVER[$key])));
+            if (filter_var($ip, FILTER_VALIDATE_IP)) {
+                return $ip;
+            }
+        }
+    }
+    return $_SERVER['REMOTE_ADDR'];
+}
+
+$ip = getIp();
+
 // Подключение к базе данных MySQL
 $servername = "localhost";
 $username = "root";
@@ -23,7 +49,7 @@ $dbname = "visitors";
 
 // Создаем подключение
 $conn = new mysqli($servername, $username, $password, $dbname);
-$ip = '127.0.0.1';
+// $ip = '127.0.0.1';
 
 // Проверка соединения
 if ($conn->connect_error) {
