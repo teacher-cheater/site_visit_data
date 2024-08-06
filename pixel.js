@@ -1,4 +1,6 @@
 (function () {
+  const startTime = new Date().getTime();
+
   function getCookie(name) {
     const matches = document.cookie.match(
       new RegExp(
@@ -38,10 +40,9 @@
   }
   setCookie("visited", "true", { expires: 365 });
 
-  // Сбор данных
   const data = {
     url: window.location.href,
-    visiting_site: document.referrer,
+    time_on_page: 0,
     ip_user: "",
     time_stamp: new Date().toISOString(),
     scroll_percentage: 0,
@@ -49,22 +50,29 @@
     user_agent: navigator.userAgent,
   };
 
-  console.log(data);
-
-  // Отправка данных на сервер
-  fetch("http://site-visit-data//collect.php", {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json;charset=utf-8",
-    },
-    body: JSON.stringify(data),
-  })
-    .then(response => response.json())
-    .then(data => {
-      console.log("Success:", data);
+  function sendData() {
+    data.time_on_page = (new Date().getTime() - startTime) / 1000;
+    fetch("http://site-visit-data/collect.php", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json;charset=utf-8",
+      },
+      body: JSON.stringify(data),
     })
-    .catch(error => {
-      console.error("Error:", error);
-    });
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log("Success:", data);
+      })
+      .catch(error => {
+        console.error("Error:", error);
+      });
+  }
+
+  window.addEventListener("beforeunload", sendData);
 })();

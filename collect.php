@@ -1,7 +1,5 @@
 <?php
 header('Content-Type: application/json');
-
-// Разрешение CORS
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
@@ -20,7 +18,6 @@ if (!$data) {
     exit();
 }
 
-// Функция получения IP-адреса пользователя
 function getIp()
 {
     $keys = [
@@ -47,9 +44,7 @@ $username = "root";
 $password = "";
 $dbname = "visitors";
 
-// Создаем подключение
 $conn = new mysqli($servername, $username, $password, $dbname);
-// $ip = '127.0.0.1';
 
 // Проверка соединения
 if ($conn->connect_error) {
@@ -58,8 +53,8 @@ if ($conn->connect_error) {
 }
 
 // Записываем данные в базу данных
-$stmt = $conn->prepare("INSERT INTO visitors_data (url, visiting_site, ip_user, time_stamp, scroll_percentage, history_click, user_agent) VALUES (?, ?, ?, ?, ?, ?, ?)");
-$stmt->bind_param("sssssss", $data['url'], $data['visiting_site'], $ip, $data['time_stamp'], $data['scroll_percentage'], $data['history_click'], $data['user_agent']);
+$stmt = $conn->prepare("INSERT INTO visitors_data (url, time_on_page, ip_user, time_stamp, scroll_percentage, history_click, user_agent) VALUES (?, ?, ?, ?, ?, ?, ?)");
+$stmt->bind_param("sssssss", $data['url'], $data['time_on_page'], $ip, $data['time_stamp'], $data['scroll_percentage'], $data['history_click'], $data['user_agent']);
 
 if ($stmt->execute()) {
     echo json_encode(['status' => 'success', 'message' => 'Data recorded']);
