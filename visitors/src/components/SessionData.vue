@@ -1,23 +1,21 @@
 <template>
   <div>
-    <h1>Visits Table</h1>
-    <table>
+    <h3>Таблица посещений</h3>
+    <table class="visits-table">
       <thead>
         <tr>
           <th>ID</th>
           <th>Ссылка на сайт</th>
           <th>Время нахождения</th>
           <th>Время, когда заходили</th>
-          <th>USER_AGENT</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="item in visits" :key="item.id">
+        <tr v-for="item in visits" :key="item.id" @click="selectedVisit(item)">
           <td>{{ item.id }}</td>
           <td>{{ item.url }}</td>
           <td>{{ getTimeOnPage(item.time_on_page) }}</td>
           <td>{{ formatDate(item.time_stamp) }}</td>
-          <td>{{ getUserAgent(item.user_agent) }}</td>
         </tr>
       </tbody>
     </table>
@@ -36,19 +34,13 @@
 export default {
   data() {
     return {
-      visits: [],
-      selectedVisit: null
+      visits: []
+      //   selectedVisit: null
     }
   },
   methods: {
     formatDate(timestamp) {
-      const date = new Date(timestamp)
-      const day = String(date.getDate()).padStart(2, '0')
-      const month = String(date.getMonth() + 1).padStart(2, '0')
-      const year = date.getFullYear()
-      const hours = String(date.getHours()).padStart(2, '0')
-      const minutes = String(date.getMinutes()).padStart(2, '0')
-      return `${day}.${month}.${year} ${hours}:${minutes}`
+      return new Date(timestamp).toLocaleString()
     },
     getUserAgent(data) {
       const parts = data.split(' ')
@@ -84,6 +76,9 @@ export default {
         .catch((error) => {
           console.error('Error:', error)
         })
+    },
+    selectedVisit(item) {
+      console.log(item)
     }
   },
   mounted() {
@@ -92,4 +87,47 @@ export default {
 }
 </script>
 
-<style></style>
+<style scoped>
+.visits-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 18px;
+  text-align: left;
+}
+
+.visits-table th,
+.visits-table td {
+  padding: 12px 15px;
+}
+
+.visits-table thead th {
+  background-color: #f2f2f2;
+  border-bottom: 1px solid #dddddd;
+}
+
+.visits-table tbody tr {
+  border-bottom: 1px solid #dddddd;
+}
+
+.visits-table tbody tr:nth-of-type(even) {
+  background-color: #f9f9f9;
+}
+
+.visits-table tbody tr:hover {
+  background-color: #f1f1f1;
+}
+
+.visits-table tbody tr:active {
+  background-color: #e9e9e9;
+}
+
+.visits-table tbody tr:last-of-type {
+  border-bottom: 2px solid #009879;
+}
+
+h3 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+</style>
