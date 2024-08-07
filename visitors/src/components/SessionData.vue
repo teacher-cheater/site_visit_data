@@ -52,18 +52,25 @@ export default {
       const browser = parts[4]
       return `Платформа: ${platform} ОС: ${os} Браузер: ${browser}`
     },
-    getTimeOnPage(times) {
-      const minutes = Math.round(times)
-      const hours = Math.floor(minutes / 60)
-      const remainingMinutes = minutes % 60
+    getTimeOnPage(seconds) {
+      const totalSeconds = Math.round(seconds)
+      const hours = Math.floor(totalSeconds / 3600)
+      const minutes = Math.floor((totalSeconds % 3600) / 60)
+      const remainingSeconds = totalSeconds % 60
+
       let result = ''
+
       if (hours > 0) {
-        result += `${hours} час `
+        result += `${hours} ч. `
       }
-      if (remainingMinutes > 0) {
-        result += `${remainingMinutes} минут`
+      if (minutes > 0) {
+        result += `${minutes} мин. `
       }
-      return result
+      if (remainingSeconds > 0 || (hours === 0 && minutes === 0)) {
+        result += `${remainingSeconds} сек.`
+      }
+
+      return result.trim()
     },
     fetchVisits() {
       fetch('http://site-visit-data/collect.php')
