@@ -15,9 +15,9 @@
         <tr v-for="item in visits" :key="item.id">
           <td>{{ item.id }}</td>
           <td>{{ item.url }}</td>
-          <td>{{ item.time_on_page }}</td>
+          <td>{{ getTimeOnPage(item.time_on_page) }}</td>
           <td>{{ formatDate(item.time_stamp) }}</td>
-          <td>{{ item.user_agent }}</td>
+          <td>{{ getUserAgent(item.user_agent) }}</td>
         </tr>
       </tbody>
     </table>
@@ -49,6 +49,26 @@ export default {
       const hours = String(date.getHours()).padStart(2, '0')
       const minutes = String(date.getMinutes()).padStart(2, '0')
       return `${day}.${month}.${year} ${hours}:${minutes}`
+    },
+    getUserAgent(data) {
+      const parts = data.split(' ')
+      const platform = parts[0]
+      const os = parts[2]
+      const browser = parts[4]
+      return `Платформа:${platform} ОС:${os} Браузер:${browser} `
+    },
+    getTimeOnPage(times) {
+      const minutes = Math.round(times)
+      const hours = Math.floor(minutes / 60)
+      const remainingMinutes = minutes % 60
+      let result = ''
+      if (hours > 0) {
+        result += `${hours} час `
+      }
+      if (remainingMinutes > 0) {
+        result += `${remainingMinutes} минут`
+      }
+      return result
     },
     fetchVisits() {
       fetch('http://site-visit-data/collect.php')
