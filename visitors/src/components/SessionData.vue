@@ -26,8 +26,8 @@
         <p><strong>Процент скролла:</strong> {{ selectedVisit.scroll_percentage }}</p>
         <p><strong>История кликов:</strong> {{ selectedVisit.history_click }}</p>
         <p><strong>User Agent:</strong> {{ getUserAgent(selectedVisit.user_agent) }}</p>
-        <!-- <p><strong>Девайс:</strong> {{ selectedVisit.user_agent }}</p>
-      <p><strong>Платформа:</strong> {{ selectedVisit.user_agent }}</p> -->
+        <p><strong>Девайс:</strong> {{ getUserAgentDevice(selectedVisit.user_agent) }}</p>
+        <p><strong>Платформа:</strong> {{ getUserAgentPlatform(selectedVisit.user_agent) }}</p>
       </div>
     </div>
   </div>
@@ -46,11 +46,13 @@ export default {
       return new Date(timestamp).toLocaleString()
     },
     getUserAgent(data) {
-      const parts = data.split(' ')
-      const platform = parts[0]
-      const os = parts[2]
-      const browser = parts[4]
-      return `Платформа: ${platform} ОС: ${os} Браузер: ${browser}`
+      return data.split(' ')[4]
+    },
+    getUserAgentDevice(data) {
+      return data.split(' ')[2]
+    },
+    getUserAgentPlatform(data) {
+      return data.split(' ')[0]
     },
     getTimeOnPage(seconds) {
       const totalSeconds = Math.round(seconds)
