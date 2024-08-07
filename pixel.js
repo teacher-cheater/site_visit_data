@@ -1,6 +1,4 @@
 (function () {
-  console.log(window.navigator);
-
   const startTime = new Date().getTime();
 
   function getCookie(name) {

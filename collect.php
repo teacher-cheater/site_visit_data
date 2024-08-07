@@ -16,7 +16,8 @@ class IpManager
         ];
         foreach ($keys as $key) {
             if (!empty($_SERVER[$key])) {
-                $ip = trim(end(explode(',', $_SERVER[$key])));
+                $ipList = explode(',', $_SERVER[$key]);
+                $ip = trim(end($ipList));
                 if (filter_var($ip, FILTER_VALIDATE_IP)) {
                     return $ip;
                 }
@@ -26,7 +27,7 @@ class IpManager
     }
 }
 
-// работа с базой данных
+// работа с базой данных 
 class Database
 {
     private $conn;
@@ -56,53 +57,92 @@ class Database
         $stmt->close();
     }
 
+    public function getVisitorData()
+    {
+        $result = $this->conn->query("SELECT * FROM visitors_data");
+        if (!$result) {
+            throw new Exception('Query failed: ' . $this->conn->error);
+        }
+
+        $data = [];
+        while ($row = $result->fetch_assoc()) {
+            $data[] = $row;
+        }
+
+        return $data;
+    }
+
     public function __destruct()
     {
         $this->conn->close();
     }
 }
 
-// обработка запросов
+// обработка запросов 
 class RequestHandler
 {
     private $data;
+    private $method;
+    private $raw_data;
 
     public function __construct()
     {
-        $raw_data = file_get_contents('php://input');
-        $this->data = json_decode($raw_data, true);
-
-        if (!$this->data) {
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'No data received or JSON invalid',
-                'raw_data' => $raw_data,
-                'json_error' => json_last_error_msg()
-            ]);
-            exit();
-        }
+        $this->method = $_SERVER['REQUEST_METHOD'];
+        $this->raw_data = file_get_contents('php://input');
+        $this->data = json_decode($this->raw_data, true);
     }
 
     public function handleRequest()
     {
-        $ip = IpManager::getIp();
         $db = new Database("localhost", "root", "", "visitors");
 
-        try {
-            $db->insertVisitorData(
-                $this->data['url'],
-                $this->data['time_on_page'],
-                $ip,
-                $this->data['time_stamp'],
-                $this->data['scroll_percentage'],
-                $this->data['history_click'],
-                $this->data['user_agent']
-            );
+        if ($this->method == 'POST') {
+            if (!$this->data) {
+                $this->respondWithError('No data received or JSON invalid', $this->raw_data, json_last_error_msg());
+            }
 
-            echo json_encode(['status' => 'success', 'message' => 'Data recorded']);
-        } catch (Exception $e) {
-            echo json_encode(['status' => 'error', 'message' => 'Error: ' . $e->getMessage()]);
+            $ip = IpManager::getIp();
+
+            try {
+                $db->insertVisitorData(
+                    $this->data['url'],
+                    $this->data['time_on_page'],
+                    $ip,
+                    $this->data['time_stamp'],
+                    $this->data['scroll_percentage'],
+                    $this->data['history_click'],
+                    $this->data['user_agent']
+                );
+
+                $this->respondWithSuccess('Data recorded');
+            } catch (Exception $e) {
+                $this->respondWithError('Error: ' . $e->getMessage());
+            }
+        } elseif ($this->method == 'GET') {
+            try {
+                $data = $db->getVisitorData();
+                echo json_encode(['status' => 'success', 'data' => $data]);
+            } catch (Exception $e) {
+                $this->respondWithError('Error: ' . $e->getMessage());
+            }
         }
+    }
+
+    private function respondWithSuccess($message)
+    {
+        echo json_encode(['status' => 'success', 'message' => $message]);
+        exit();
+    }
+
+    private function respondWithError($message, $raw_data = '', $json_error = '')
+    {
+        echo json_encode([
+            'status' => 'error',
+            'message' => $message,
+            'raw_data' => $raw_data,
+            'json_error' => $json_error
+        ]);
+        exit();
     }
 }
 
