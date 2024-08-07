@@ -11,7 +11,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="item in visits" :key="item.id" @click="selectedVisit(item)">
+        <tr v-for="item in visits" :key="item.id" @click="selectVisit(item)">
           <td>{{ item.id }}</td>
           <td>{{ item.url }}</td>
           <td>{{ getTimeOnPage(item.time_on_page) }}</td>
@@ -19,13 +19,16 @@
         </tr>
       </tbody>
     </table>
-    <div v-if="selectedVisit">
-      <h2>Visit Details</h2>
-      <p><strong>IP User:</strong> {{ selectedVisit.ip_user }}</p>
-      <p><strong>Scroll Percentage:</strong> {{ selectedVisit.scroll_percentage }}</p>
-      <p><strong>History Click:</strong> {{ selectedVisit.history_click }}</p>
-      <p><strong>User Agent:</strong> {{ selectedVisit.user_agent }}</p>
-      <p><strong>Time on Page:</strong> {{ selectedVisit.time_on_page }}</p>
+    <div v-if="selectedVisit" class="modal-dialog" @click.self="hideModalDialog">
+      <div class="modal-dialog__content">
+        <h2>Детали посещения</h2>
+        <p><strong>IP пользователя:</strong> {{ selectedVisit.ip_user }}</p>
+        <p><strong>Процент скролла:</strong> {{ selectedVisit.scroll_percentage }}</p>
+        <p><strong>История кликов:</strong> {{ selectedVisit.history_click }}</p>
+        <p><strong>User Agent:</strong> {{ getUserAgent(selectedVisit.user_agent) }}</p>
+        <!-- <p><strong>Девайс:</strong> {{ selectedVisit.user_agent }}</p>
+      <p><strong>Платформа:</strong> {{ selectedVisit.user_agent }}</p> -->
+      </div>
     </div>
   </div>
 </template>
@@ -34,8 +37,8 @@
 export default {
   data() {
     return {
-      visits: []
-      //   selectedVisit: null
+      visits: [],
+      selectedVisit: null
     }
   },
   methods: {
@@ -47,7 +50,7 @@ export default {
       const platform = parts[0]
       const os = parts[2]
       const browser = parts[4]
-      return `Платформа:${platform} ОС:${os} Браузер:${browser} `
+      return `Платформа: ${platform} ОС: ${os} Браузер: ${browser}`
     },
     getTimeOnPage(times) {
       const minutes = Math.round(times)
@@ -77,10 +80,14 @@ export default {
           console.error('Error:', error)
         })
     },
-    selectedVisit(item) {
-      console.log(item)
+    selectVisit(visit) {
+      this.selectedVisit = visit
+    },
+    hideModalDialog() {
+      this.selectedVisit = null
     }
   },
+
   mounted() {
     this.fetchVisits()
   }
@@ -125,9 +132,27 @@ export default {
 .visits-table tbody tr:last-of-type {
   border-bottom: 2px solid #009879;
 }
+.visits-table tbody tr td {
+  cursor: pointer;
+}
 
 h3 {
   font-size: 24px;
   margin-bottom: 20px;
+}
+.modal-dialog {
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  position: fixed;
+  display: flex;
+}
+.modal-dialog__content {
+  margin: auto;
+  background-color: #e9e9e9;
+  border: 1px solid #dddddd;
+  padding: 20px 30px;
 }
 </style>
